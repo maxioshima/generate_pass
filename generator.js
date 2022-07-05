@@ -2,16 +2,14 @@ import { argv } from 'node:process';
 import clipboard from 'clipboardy';
 
 let password = [];
-let pass_length;
+let pass_length = argv[2] && Number(argv[2]) <= 16 ? argv[2] : 16;
 
-function generate_password(length) {
-    let rule_object = !argv.includes('opt_symb') ? 
-    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-    :
-    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890' + '_-+!?*)(<>';
+function generate_password(pass_length) {
+    check_vals();
+    let rule_object = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
     let i = 0;
 
-    while (i < length) {
+    while (i < pass_length) {
         password.push(rule_object.split('')[Math.floor(Math.random() * (62 - 0))]);
         i++
     }
@@ -19,21 +17,23 @@ function generate_password(length) {
     return password.join('')
 }
 
-function copy2clipboard(length) {
-    let joined_password = generate_password(length);
-    clipboard.writeSync(`${joined_password}`);
-    return joined_password
-}
-
 function check_vals() {
     if (argv.length === 3) {
         if (Number(argv[2])) {
             return argv[2];
         } else {
-            return Error('Длинна пароля должна быть числом')
+            throw new Error('Длинна пароля должна быть числом')
         }
-    } 
+    } else if (argv.length > 3) {
+        throw new Error('Expected 1 argument, got 2')
+    }
 }
 
-console.log(check_vals())
+function copy2clipboard() {
+    let joined_password = generate_password(pass_length);
+    clipboard.writeSync(`${joined_password}`);
+    return joined_password
+}
+
+console.log(copy2clipboard())
 // console.log(check_vals)
